@@ -1,0 +1,35 @@
+{% extends 'base.html' %} {% block content %}
+<h2>Project list</h2>
+<p>
+  <a href="{% url 'upload_project' %}" class="btn btn-primary"
+    >Upload project</a
+  >
+</p>
+<table class="table mb-0">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>File name</th>
+      <th>Description</th>
+      <th>File</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for project in projects %}
+    <tr>
+      <td>{{ project.title }}</td>
+      <td>{{ project.name }}</td>
+      <td>{{ project.desc }}</td>
+      <td>{{ project.data }}</td>
+      <td>
+        <form method="post" action="{% url 'delete_project' project.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

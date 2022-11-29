@@ -1,0 +1,21 @@
+{% extends 'base.html' %} {% block content %}
+<h2>PCA Project</h2>
+<table class="table mb-0">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>File name</th>
+      <th>Description</th>
+      <th>File</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{ project.title }}</td>
+      <td>{{ project.name }}</td>
+      <td>{{ project.desc }}</td>
+      <td>{{ project.data }}</td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
