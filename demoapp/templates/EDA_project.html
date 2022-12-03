@@ -1,21 +1,76 @@
 {% extends 'base.html' %} {% block content %}
-<h2>EDA Project</h2>
-<table class="table mb-0">
-  <thead>
+<html lang="en">
+  <h2>EDA: {{ project.title }}</h2>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
     <tr>
-      <th>Title</th>
-      <th>File name</th>
-      <th>Description</th>
-      <th>File</th>
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
     </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>{{ project.title }}</td>
-      <td>{{ project.name }}</td>
-      <td>{{ project.desc }}</td>
-      <td>{{ project.data }}</td>
-    </tr>
-  </tbody>
-</table>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <h3>Paso 1: Descripción de la estructura de los datos</h3>
+  <p>1) Forma (dimensiones) del DataFrame</p>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+  <p>2) Tipos de datos (variables)</p>
+  {% for i in types %}
+  <li>{{ i }}</li>
+  {% endfor %}
+  <h3>Paso 2: Identificación de datos faltantes</h3>
+  {% for i in null %}
+  <li>{{ i }}</li>
+  {% endfor %}
+  <h3>Paso 3: Detección de valores atípicos</h3>
+  <p>1) Distribución de variables numéricas</p>
+  <li>Se utilizan histogramas que agrupan los números en rangos.</li>
+  <li>La altura de una barra muestra cuántos números caen en ese rango.</li>
+  
+</html>
+
+{% autoescape off %}
+{% for i in histograms %}
+{{ i.data }}
+{% endfor %}
+{% endautoescape %}
+
+<html lang="en">
+  <p>2) Resumen estadístico de variables numéricas</p>
+  <p>3) Diagramas para detectar posibles valores atípicos</p>
+  
+</html>
+
+{% autoescape off %}
+{% for i in boxes %}
+{{ i.data }}
+{% endfor %}
+{% endautoescape %}
+
+<html lang="en">
+  
+  <p>4) Distribución de variables categóricas</p>
+  <p>Se refiere a la observación de las clases de cada columna (variable) y su frecuencia. 
+    Aquí, los gráficos ayudan para tener una idea general de las distribuciones, mientras 
+    que las estadísticas dan números reales.</p>
+  
+  <p>5) Agrupación por variables categóricas</p>
+
+  <h3>Paso 4: Identificación de relaciones entre pares variables</h3>
+  <p>Una matriz de correlaciones es útil para analizar la relación entre las variables numéricas.</p>
+  <li>Una correlación es un valor entre -1 y 1 que equivale a qué tan cerca se mueven simultáneamente los valores de dos variables.</li>
+  <li>Una correlación positiva significa que a medida que una característica aumenta, la otra también aumenta.</li>
+  <li>Una correlación negativa significa que a medida que una característica disminuye, la otra también disminuye.</li>
+  <li>Las correlaciones cercanas a 0 indican una relación débil, mientras que las más cercanas a -1 o 1 significan una relación fuerte.</li>
+  
+</html>
+
 {% endblock %}

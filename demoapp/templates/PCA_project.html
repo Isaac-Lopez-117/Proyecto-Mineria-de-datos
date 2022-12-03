@@ -1,21 +1,30 @@
 {% extends 'base.html' %} {% block content %}
-<h2>PCA Project</h2>
-<table class="table mb-0">
-  <thead>
+<html lang="en">
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <h2>PCA Project</h2>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
     <tr>
-      <th>Title</th>
-      <th>File name</th>
-      <th>Description</th>
-      <th>File</th>
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
     </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>{{ project.title }}</td>
-      <td>{{ project.name }}</td>
-      <td>{{ project.desc }}</td>
-      <td>{{ project.data }}</td>
-    </tr>
-  </tbody>
-</table>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+</html>
+
+{% autoescape off %}
+{{ plot_div }}
+{% endautoescape %}
+
 {% endblock %}
