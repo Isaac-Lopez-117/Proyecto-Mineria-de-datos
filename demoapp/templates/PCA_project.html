@@ -1,7 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 <html lang="en">
-  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-  <h2>PCA Project</h2>
+  <h2>PCA: {{ project.title }}</h2>
   <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
     <tr>
       {% for col in df.columns %}
@@ -21,10 +20,88 @@
       {% endfor %}
   </table>
   <p> {{size.0}} rows x {{size.1}} columns</p>
-</html>
+
+  <h3>Paso 1: Comprobar evidencia de variables posiblemente correlacionada</h3>
 
 {% autoescape off %}
-{{ plot_div }}
+{{ hm }}
 {% endautoescape %}
 
+<h3>Paso 2: Se hace una estandarización de los datos.</h3>
+
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+  <tr>
+    {% for col in std.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in std.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+
+<h3>Paso 3 y 4: Se calcula la matriz de covarianzas o correlaciones, y se calculan los componentes (eigen-vectores) y la varianza (eigen-valores).</h3>
+
+{{comp}}
+
+<h3>Paso 5: Se decide el número de componentes principales</h3>
+<p>Numero de componentes: {{num_comp}}</p>
+<p>Varianza acumulada: {{var}}</p>
+
+{% autoescape off %}
+{{ v }}
+{% endautoescape %}
+
+<h3>Paso 6: Se examina la proporción de relevancias –cargas–</h3>
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+  <tr>
+    {% for col in cc.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in cc.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+<p>Nuevos datos seleccionados en base a una muestra (0.50)</p>
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+  <tr>
+    {% for col in ndf.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in ndf.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+
+<a href="http://localhost:8000/api/media/data/newData.csv" class="btn btn-primary btn-sm" target="_blank">
+  Download Data
+</a>
+
+</html>
 {% endblock %}

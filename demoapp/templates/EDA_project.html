@@ -34,8 +34,6 @@
   <p>1) Distribución de variables numéricas</p>
   <li>Se utilizan histogramas que agrupan los números en rangos.</li>
   <li>La altura de una barra muestra cuántos números caen en ese rango.</li>
-  
-</html>
 
 {% autoescape off %}
 {% for i in histograms %}
@@ -43,34 +41,95 @@
 {% endfor %}
 {% endautoescape %}
 
-<html lang="en">
   <p>2) Resumen estadístico de variables numéricas</p>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr>
+      {% for col in info.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in info.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
   <p>3) Diagramas para detectar posibles valores atípicos</p>
   
-</html>
-
 {% autoescape off %}
 {% for i in boxes %}
 {{ i.data }}
 {% endfor %}
 {% endautoescape %}
-
-<html lang="en">
   
   <p>4) Distribución de variables categóricas</p>
   <p>Se refiere a la observación de las clases de cada columna (variable) y su frecuencia. 
     Aquí, los gráficos ayudan para tener una idea general de las distribuciones, mientras 
     que las estadísticas dan números reales.</p>
-  
+    <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+      <tr>
+        {% for col in vc.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in vc.iterrows %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+
+{% autoescape off %}
+{% for i in dist %}
+{{ i.data }}
+{% endfor %}
+{% endautoescape %}
+
   <p>5) Agrupación por variables categóricas</p>
+
+  {% for i in agru %}
+    <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+      <tr>
+        {% for col in i.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in i.iterrows %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  {% endfor %}
 
   <h3>Paso 4: Identificación de relaciones entre pares variables</h3>
   <p>Una matriz de correlaciones es útil para analizar la relación entre las variables numéricas.</p>
+{% autoescape off %}
+{{ hm }}
+{% endautoescape %}
   <li>Una correlación es un valor entre -1 y 1 que equivale a qué tan cerca se mueven simultáneamente los valores de dos variables.</li>
   <li>Una correlación positiva significa que a medida que una característica aumenta, la otra también aumenta.</li>
   <li>Una correlación negativa significa que a medida que una característica disminuye, la otra también disminuye.</li>
   <li>Las correlaciones cercanas a 0 indican una relación débil, mientras que las más cercanas a -1 o 1 significan una relación fuerte.</li>
-  
 </html>
+
 
 {% endblock %}
