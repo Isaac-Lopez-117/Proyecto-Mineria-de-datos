@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Arbol de decisión (pronóstico): {{ project.title }}</h2>
+  </div>
+</div>
+<p>2) Selección de características</p>
+<div class="container" style="overflow-x: auto;">
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  
+  <p>Mapa de calor generado</p>
+  <p>A través de un mapa de calor de identifican posibles variables correlacionadas.</p>
+
+  {% autoescape off %}
+  {{ hm }}
+  {% endautoescape %}
+
+  <p>3) Definición de las variables predictoras y variable clase</p>
+  <p>Selecciona las variables que deseas quitar para las variables predictoras</p>
+  <form class="needs-validation" novalidate action="{% url 'ad_p_p1_2' project.pk %}" method="POST">{% csrf_token %}
+    
+    {% for col in df.columns %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="predictoras" id="option{{col}}" value={{col}}>
+      <label class="form-check-label" for="option{{col}}">{{col}}</label>
+    </div>
+    {% endfor %}
+
+    <p>Ahora selecciona la variable de salida</p>
+
+    {% for col in df.columns %}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="salida" id="option{{col}}" value={{col}}>
+      <label class="form-check-label" for="option{{col}}">{{col}}</label>
+    </div>
+    {% endfor %}
+    
+    <button type="submit" class="btn btn-primary">Continuar</button>
+  </form>
+</div>
+
+
+{% endblock %}

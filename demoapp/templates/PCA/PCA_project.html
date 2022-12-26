@@ -1,0 +1,99 @@
+{% extends 'base.html' %} {% block content %}
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<html lang="en">
+  <h2>PCA: {{ project.title }}</h2>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+
+  <h3>Paso 1: Comprobar evidencia de variables posiblemente correlacionada</h3>
+
+{% autoescape off %}
+{{ hm }}
+{% endautoescape %}
+
+<h3>Paso 2: Se hace una estandarización de los datos.</h3>
+
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+  <tr>
+    {% for col in std.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in std.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+
+<h3>Paso 3 y 4: Se calcula la matriz de covarianzas o correlaciones, y se calculan los componentes (eigen-vectores) y la varianza (eigen-valores).</h3>
+
+{{comp}}
+
+<h3>Paso 5: Se decide el número de componentes principales</h3>
+<p>Numero de componentes: {{num_comp}}</p>
+<p>Varianza acumulada: {{var}}</p>
+
+{% autoescape off %}
+{{ v }}
+{% endautoescape %}
+<h3>Paso 6: Se examina la proporción de relevancias –cargas–</h3>
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+  <tr>
+    {% for col in cc.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in cc.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+
+<p>Selecciona las columnas que desea quitar:</p>
+
+<form class="needs-validation" novalidate action="{% url 'guardar' project.pk %}" method="POST">{% csrf_token %}
+    
+  {% for col in col_num %}
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" name="columnas" id="option{{col}}" value={{col}}>
+    <label class="form-check-label" for="option{{i}}">{{col}}</label>
+  </div>
+  {% endfor %}
+  
+  <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+
+</html>
+{% endblock %}

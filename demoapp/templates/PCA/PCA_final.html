@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% block content %}
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<html lang="en">
+
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+
+  
+  <a href="http://localhost:8000/api/media/data/newData.csv" class="btn btn-primary btn-sm" target="_blank">
+    Download Data
+  </a>
+  
+</html>
+{% endblock %}

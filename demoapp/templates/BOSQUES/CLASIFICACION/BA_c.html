@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Bosque aleatorio (clasificación): {{ project.title }}</h2>
+  </div>
+</div>
+
+<div class="container" style="overflow-x: auto;">
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+
+  <h3>Paso 1: Acceso a datos y selección de características</h3>
+
+  <p>1) Acceso a los datos</p>
+  <p>Tipo de datos</p>
+  {% for i in types %}
+  <li>{{ i }}</li>
+  {% endfor %}
+  
+  <p>2) Selección de características</p>
+  <p>Selecciona la variable que deseas eliminar para el analisis de correlaciones</p>
+  <form class="needs-validation" novalidate action="{% url 'ba_c_p1' project.pk %}" method="POST">{% csrf_token %}
+    
+    {% for col in df.columns %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="columnas" id="option{{col}}" value={{col}}>
+      <label class="form-check-label" for="option{{col}}">{{col}}</label>
+    </div>
+    {% endfor %}
+    
+    <button type="submit" class="btn btn-primary">Continuar</button>
+  </form>
+  <p>Si no quieres eliminar ninguna, selecciona continuar</p>
+</div>
+  
+</div>
+
+
+{% endblock %}

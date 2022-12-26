@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Arbol de decisión (pronóstico): {{ project.title }}</h2>
+  </div>
+</div>
+<div>
+  <p>Datos de prueba:</p>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df_test.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df_test.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+
+  <H3>Paso 2: Creación del modelo</H3>
+
+  <p>Criterio: {{criterio}}</p>
+
+  <p>Score obtenido: {{score}}</p>
+
+  {% for i in est %}
+  {{i}}<br/>
+  {% endfor %}
+
+  <p>Importancia:</p>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      <th>
+
+      </th>
+      {% for col in importancia.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in importancia.iterrows %}
+        <tr>
+          <th>
+            {{index}}
+          </th>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+
+  <p>Reporte del arbol:</p>
+  <div style="overflow: auto; width: 900px; height: 300px" >
+    <br/>
+    {% for i in arbol %}
+    <p style="line-height: 40%;">{{i}}</p>
+    {% endfor %}
+  </div>
+
+
+  <p>¿Desea hacer una prueba?</p>
+  <form class="needs-validation" novalidate action="{% url 'ad_p_final' project.pk %}" method="POST">{% csrf_token %}
+    
+    {% for col in df.columns %}
+    <div class="form-check">
+      <label for="option:{{col}}">{{col}}:</label>
+      <input type="number" min="0" oninput="validity.valid||(value='');" name="entradas" id="option:{{col}}"/>
+    </div>
+    {% endfor %}
+    <a href="/ad/" class="btn btn-secondary">No</a>
+    <button type="submit" class="btn btn-primary">Continuar</button>
+  </form>
+
+</div>
+
+{% endblock %}
