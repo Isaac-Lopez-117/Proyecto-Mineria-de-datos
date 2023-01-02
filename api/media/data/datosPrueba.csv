@@ -1,6 +1,0 @@
-Suburb,Address,Rooms,Type,Price,Method,SellerG,Date,Distance,Postcode,Bedroom2,Bathroom,Car,Landsize,BuildingArea,YearBuilt,CouncilArea,Lattitude,Longtitude,Regionname,Propertycount
-Abbotsford,85 Turner St,2,h,1480000,S,Biggin,03/12/2016,2.5,3067,2,1,1,202,,,Yarra,-37.7996,144.9984,Northern Metropolitan,4019
-Airport West,154 Halsey Rd,3,t,840000,PI,Nelson,03/09/2016,13.5,3042,3,2,1,303,225,2016,Moonee Valley,-37.718,144.878,Western Metropolitan,3464
-Albert Park,105 Kerferd Rd,2,h,1275000,S,hockingstuart,03/09/2016,3.3,3206,2,1,0,120,82,1900,Port Phillip,-37.8459,144.9555,Southern Metropolitan,3280
-Alphington,6 Smith St,4,h,2000000,S,Brace,03/09/2016,6.4,3078,3,2,4,853,263,1930,Darebin,-37.7707,145.0318,Northern Metropolitan,2211
-Altona,158 Queen St,3,h,520000,VB,Greg,03/09/2016,13.8,3018,3,2,1,352,242,2015,Hobsons Bay,-37.87,144.825,Western Metropolitan,5301
