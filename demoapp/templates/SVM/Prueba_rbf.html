@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
-    <h2>Bosque aleatorio (clasificación): {{ project.title }}</h2>
+    <h2>Máquinas de soporte vectorial (rbf): {{ project.title }}</h2>
   </div>
 </div>
 <div>
@@ -28,12 +28,12 @@
         {% endfor %}
     </table>
   </div>
-    <p>Resultado de la clasificación: {{resultado}}</p>
+    <p>Resultado de la clasificacion: Cluster{{resultado}}</p>
     <p>Validación del modelo</p>
     {% autoescape off %}
     {{ auc }}
     {% endautoescape %}
-    
+
     {% for i in auc_score %}
     {{i}}<br/>
     {% endfor %}

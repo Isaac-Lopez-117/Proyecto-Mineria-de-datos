@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
-    <h2>Arbol de decisión (clasificación): {{ project.title }}</h2>
+    <h2>Máquinas de soporte vectorial (lineal): {{ project.title }}</h2>
   </div>
 </div>
 <div>
@@ -16,7 +16,7 @@
 
   <p>Score obtenido: {{score}}</p>
 
-  <p>Matriz de clasicacion</p>
+  <p>Matriz de clasificacion</p>
   <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
     <tr class="table-dark">
       <th>
@@ -41,8 +41,6 @@
         </tr>
       {% endfor %}
   </table>
-
-  <p>Criterio: {{criterio}}</p>
 
   <p>Reporte:</p>
   <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
@@ -70,19 +68,19 @@
       {% endfor %}
   </table>
 
-  <p>Importancia:</p>
+  <p>Dataframe de las variables de soporte:</p>
   <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
     <tr class="table-dark">
       <th>
 
       </th>
-      {% for col in importancia.columns %}
+      {% for col in df_vs.columns %}
         <th>
           {{col}}
         </th>
       {% endfor %}
     </tr>
-      {% for index, row in importancia.iterrows %}
+      {% for index, row in df_vs.iterrows %}
         <tr>
           <th>
             {{index}}
@@ -96,17 +94,13 @@
       {% endfor %}
   </table>
 
-  <p>Reporte del arbol:</p>
-  <div style="overflow: auto; width: 900px; height: 300px" >
-    <br/>
-    {% for i in arbol %}
-    <p style="line-height: 40%;">{{i}}</p>
-    {% endfor %}
-  </div>
+  <p>Número de vectores de soporte: {{n_vs}}</p>
 
+  <p>Vectores de soporte: {{vs}}</p>
+  
   <p>¿Desea realizar una prueba?</p>
 
-  <form class="needs-validation" novalidate action="{% url 'ad_c_final' project.pk %}" method="POST">{% csrf_token %}
+  <form class="needs-validation" novalidate action="{% url 'svm_final_lineal' project.pk %}" method="POST">{% csrf_token %}
     
     {% for col in df.columns %}
     <div class="form-check">
@@ -114,7 +108,7 @@
       <input type="number" min="0" step=0.0001 oninput="validity.valid||(value='');" name="entradas" id="option:{{col}}"/>
     </div>
     {% endfor %}
-    <a href="/ad/" class="btn btn-secondary">No</a>
+    <a href="/svm/" class="btn btn-secondary">No</a>
     <button type="submit" class="btn btn-primary">Continuar</button>
   </form>
 

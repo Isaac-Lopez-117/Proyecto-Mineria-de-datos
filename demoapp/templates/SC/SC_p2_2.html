@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Segmentación y Clasificación: {{ project.title }}</h2>
+  </div>
+</div>
+
+<div class="container" style="overflow-x: auto;">
+  <p>3) Definición de las variables predictoras y variable clase</p>
+  <p>Variables predictoras</p>  
+  <div class="container" style="overflow-x: auto;">
+    <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+      <tr class="table-dark">
+        {% for col in X.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in X.iterrows %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+    <p>Variable a predecir</p>  
+  <div class="container" style="overflow-x: auto;" >
+    <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+      <tr class="table-dark">
+        {% for col in Y.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in Y.iterrows %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+  <form class="needs-validation" novalidate action="{% url 'sc_p3' project.pk %}" method="POST">{% csrf_token %}
+    <button type="submit" class="btn btn-primary">Continuar</button>
+  </form>
+</div>
+
+
+{% endblock %}

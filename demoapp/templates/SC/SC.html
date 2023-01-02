@@ -1,0 +1,46 @@
+{% extends 'base.html' %} {% block content %}
+<h2>Segmentación y Clasificación</h2>
+<p>Escoge tu proyecto</p>
+<table class="table mb-0">
+  <thead>
+    <tr class="table-dark">
+      <th>Titulo</th>
+      <th>Nombre del archivo</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for project in projects %}
+    <tr>
+      <td>{{ project.title }}</td>
+      <td>{{ project.name }}</td>
+      <td>
+          <form method="post" action="{% url 'sc_p0' project.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Escoger</button>
+          </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p>
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent venenatis
+  ligula dui, in sollicitudin mauris tincidunt sed. Aliquam feugiat ligula vitae
+  neque interdum suscipit. Ut pulvinar sed odio in ullamcorper. Vivamus ac
+  cursus lacus, non mollis felis. Maecenas in lectus eget elit varius finibus ac
+  a ex. Proin commodo enim eget porta efficitur. Donec scelerisque felis vitae
+  massa aliquet hendrerit. Integer in diam vel sem molestie ullamcorper vel ac
+  nunc. Donec quis velit sodales, pharetra erat non, viverra lacus. Sed ac sem
+  tincidunt mauris dapibus condimentum. Pellentesque convallis urna consectetur
+  diam sodales laoreet vitae sed nulla. Mauris laoreet cursus est sed
+  consectetur. In elementum congue erat, a elementum felis luctus nec. Mauris
+  arcu ipsum, volutpat sed augue vel, rutrum viverra justo. Nullam ornare
+  feugiat rutrum. Nam dictum hendrerit lorem, a vestibulum orci aliquam in.
+  Aliquam a luctus felis. Curabitur non venenatis nibh, in cursus leo. Nam
+  condimentum cursus venenatis. Mauris ac sem vestibulum nisi hendrerit porta ut
+  id leo. Donec finibus, felis a lacinia blandit, sapien orci congue magna,
+  tempor euismod mi elit non mauris. Vivamus id gravida magna. Curabitur auctor
+  fringilla arcu sit amet scelerisque.
+</p>
+{% endblock %}

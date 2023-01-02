@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Segmentación y Clasificación: {{ project.title }}</h2>
+  </div>
+</div>
+<p>2) Selección de características</p>
+<div class="container" style="overflow-x: auto;">
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  
+  <p>Mapa de calor generado</p>
+  <p>A través de un mapa de calor de identifican posibles variables correlacionadas.</p>
+
+  {% autoescape off %}
+  {{ hm }}
+  {% endautoescape %}
+
+  <p>Algoritmo: K-means</p>
+  <p>Los clústeres mediante K-means es un aprendizaje no supervisado popular. 
+    Se utiliza para encontrar grupos intrínsecos dentro del conjunto de datos sin etiquetar y extraer inferencias de ellos.
+  </p>
+  <p>Cuando se trabaja con clustering, dado que son algoritmos basados en distancias, es fundamental escalar los datos para 
+    que cada una de las variables contribuyan por igual en el análisis.
+  </p>
+
+  <p>Datos estandarizados</p>
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr class="table-dark">
+      {% for col in std.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in std.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+
+  {% autoescape off %}
+  {{ elbow }}
+  {% endautoescape %}
+  
+  <form class="needs-validation" novalidate action="{% url 'sc_p2' project.pk %}" method="POST">{% csrf_token %}
+    <p>¿Cuantos clusters se van a usar?</p>
+    <div class="form-check">
+      <label for="option:clusters">Clusters:</label>
+      <input type="number" min="0" oninput="validity.valid||(value='');" name="clusters" id="option:clusters"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Continuar</button>
+    
+  </form>
+  
+</div>
+
+
+{% endblock %}

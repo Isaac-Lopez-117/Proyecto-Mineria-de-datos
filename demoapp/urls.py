@@ -32,6 +32,7 @@ urlpatterns = [
     path('pca/final/<int:pk>', views.guardar, name='guardar'),
 
     path('ad/', views.ad, name='ad'),
+    
     path('ad/pronostico/<int:pk>/', views.ad_pronostico, name='ad_p'),
     path('ad/pronostico/1/<int:pk>/', views.ad_p_p1, name='ad_p_p1'),
     path('ad/pronostico/1_2/<int:pk>/', views.ad_p_p1_2, name='ad_p_p1_2'),
@@ -45,6 +46,7 @@ urlpatterns = [
     path('ad/clasificacion/final/<int:pk>/', views.ad_c_final, name='ad_c_final'),
 
     path('ba/', views.ba, name='ba'),
+    
     path('ba/pronostico/<int:pk>/', views.ba_pronostico, name='ba_p'),
     path('ba/pronostico/1/<int:pk>/', views.ba_p_p1, name='ba_p_p1'),
     path('ba/pronostico/1_2/<int:pk>/', views.ba_p_p1_2, name='ba_p_p1_2'),
@@ -56,6 +58,31 @@ urlpatterns = [
     path('ba/clasificacion/1_2/<int:pk>/', views.ba_c_p1_2, name='ba_c_p1_2'),
     path('ba/clasificacion/2/<int:pk>/', views.ba_c_p2, name='ba_c_p2'),
     path('ba/clasificacion/final/<int:pk>/', views.ba_c_final, name='ba_c_final'),
+
+    path('sc/', views.sc, name='sc'),
+    path('sc/<int:pk>/', views.sc_p0, name='sc_p0'),
+    path('sc/1/<int:pk>/', views.sc_p1, name='sc_p1'),
+    path('sc/2/<int:pk>/', views.sc_p2, name='sc_p2'),
+    path('sc/2_2/<int:pk>/', views.sc_p2_2, name='sc_p2_2'),
+    path('sc/3/<int:pk>/', views.sc_p3, name='sc_p3'),
+    path('sc/final/<int:pk>/', views.sc_final, name='sc_final'),
+
+    path('svm/', views.svm, name='svm'),
+    path('svm/<int:pk>/', views.svm_p0, name='svm_p0'),
+    path('svm/1/<int:pk>/', views.svm_p1, name='svm_p1'),
+    path('svm/1_2/<int:pk>/', views.svm_p1_2, name='svm_p1_2'),
+
+    path('svm/2/lineal/<int:pk>/', views.svm_p2_lineal, name='svm_p2_lineal'),
+    path('svm/final/lineal/<int:pk>/', views.svm_final_lineal, name='svm_final_lineal'),
+
+    path('svm/2/polinomial/<int:pk>/', views.svm_p2_polinomial, name='svm_p2_polinomial'),
+    path('svm/final/polinomial/<int:pk>/', views.svm_final_polinomial, name='svm_final_polinomial'),
+
+    path('svm/2/rbf/<int:pk>/', views.svm_p2_rbf, name='svm_p2_rbf'),
+    path('svm/final/rbf/<int:pk>/', views.svm_final_rbf, name='svm_final_rbf'),
+
+    path('svm/2/sigmoide/<int:pk>/', views.svm_p2_sigmoide, name='svm_p2_sigmoide'),
+    path('svm/final/sigmoide/<int:pk>/', views.svm_final_sigmoide, name='svm_final_sigmoide'),
 
     path('about/', views.about, name='about'),
     path('admin/', admin.site.urls),

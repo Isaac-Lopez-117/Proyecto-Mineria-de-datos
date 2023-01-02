@@ -28,7 +28,15 @@
         {% endfor %}
     </table>
   </div>
-    <p>Resultado de la clasificación: {{resultado}}</p>
+    <p>Resultado de la predicción: {{resultado}}</p>
+    <p>Validación del modelo</p>
+    {% autoescape off %}
+    {{ auc }}
+    {% endautoescape %}
+
+    {% for i in auc_score %}
+    {{i}}<br/>
+    {% endfor %}
 </div>
 
 {% endblock %}
