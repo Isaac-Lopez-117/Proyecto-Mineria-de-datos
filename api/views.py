@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 
+import os
 from plotly.offline import plot
 import plotly.express as px
 import pandas as pd
@@ -20,11 +21,8 @@ from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances_argmin_min
-from sklearn.datasets import make_classification
 from sklearn.svm import SVC                         #Support vector classifier
-
-
-
+from kneed import KneeLocator
 
 from sklearn.tree import DecisionTreeClassifier
 
@@ -57,9 +55,8 @@ def upload_project(request):
 
 #Eliminacion de un proyecto
 def delete_project(request, pk):
-    if request.method == 'POST':
-        project = Project.objects.get(pk=pk)
-        project.delete()
+    project = Project.objects.get(pk=pk)
+    project.delete()
     return redirect('project_list')
 
 #Metodo EDA
@@ -193,6 +190,8 @@ def pca_project(request, pk):
         project = Project.objects.get(pk=pk)
         source = project.data
         df = pd.read_csv(source)
+        for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
         show_df = df[:10]
         size = df.shape
 
@@ -215,7 +214,7 @@ def pca_project(request, pk):
         std = pd.DataFrame(MEstandarizada, columns=valoresNum.columns)
         show_std = std[:10]
 
-        pca = PCA(n_components=10)     #Se instancia el objeto PCA 
+        pca = PCA(n_components=None)     #Se instancia el objeto PCA 
         pca.fit(MEstandarizada)        #Se obtiene los componentes
         comp = pca.components_
 
@@ -252,11 +251,13 @@ def guardar(request, pk):
     project = Project.objects.get(pk=pk)
     source = project.data
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
     c=request.POST.getlist('columnas')
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
     #Se guarda el nuevo dataframe en un archivo CSV
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/newData.csv", index=False)
     del(df)
     return render(request, './PCA/PCA_final.html', context={'df': show_df})
 
@@ -267,8 +268,7 @@ def ad(request):
         'projects': projects
     })
 
-#Pronostico
-def ad_pronostico(request, pk):
+def ad_p0(request, pk):
     if request.method == 'POST':
         project = Project.objects.get(pk=pk)
         source = project.data
@@ -285,21 +285,27 @@ def ad_pronostico(request, pk):
             value = df[column].dtypes
             types.append(str(column) + ':  ' + str(value))
 
-        del(df)
-    return render(request, './ARBOLES/PRONOSTICO/AD_p.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types,})
+        numericos = df.select_dtypes(include = ["int16", "int32", "int64", "float16", "float32", "float64"])
+        
+        n_df = numericos.dropna()
 
-def ad_p_p1(request, pk):
+        #Creacion de un archivo CSV
+        n_df.to_csv("api/media/data/newData.csv", index=False)
+
+        del(df)
+    return render(request, './ARBOLES/AD_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': numericos})
+
+def ad_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = project.data
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
         df.columns.values[i] = df.columns.values[i].replace(" ", "_")    
     c=request.POST.getlist('columnas')
-    print(c)
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
     #Creacion de un archivo CSV
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
+    n_df.to_csv(source, index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -312,11 +318,11 @@ def ad_p_p1(request, pk):
     }
     plot_div_hm = plot({'data': hm, 'layout': layout_hm}, output_type='div')
     del(df)
-    return render(request, './ARBOLES/PRONOSTICO/AD_p_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
+    return render(request, './ARBOLES/AD_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
 
-def ad_p_p1_2(request, pk):
+def ad_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
     
     entrada =request.POST.getlist('predictoras') #Obtencion de las variables predictoras
@@ -326,7 +332,7 @@ def ad_p_p1_2(request, pk):
     show_df_x = df_X[:10]
 
     #Creacion de un archivo CSV
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
+    df_X.to_csv("api/media/data/X.csv", index=False)
     
     salida=request.POST.getlist('salida') #Obtencion de la variable de salida
     Y = np.array(df[salida])
@@ -334,15 +340,16 @@ def ad_p_p1_2(request, pk):
     show_df_y = df_Y[:10]
     
     #Creacion de un archivo CSV
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
+    df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
-    return render(request, './ARBOLES/PRONOSTICO/AD_p_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    return render(request, './ARBOLES/AD_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
 
+#Pronostico
 def ad_p_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     #Division de valores
@@ -384,9 +391,9 @@ def ad_p_p2(request, pk):
 def ad_p_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(df_X, df_Y, 
@@ -418,77 +425,11 @@ def ad_p_final(request, pk):
     return render(request, './ARBOLES/PRONOSTICO/Prueba.html', context={'project': project, 'df': df_X, 'prueba': pronostico, 'resultado': resultado})
 
 #Clasificacion
-def ad_clasificacion(request, pk):
-    if request.method == 'POST':
-        project = Project.objects.get(pk=pk)
-        source = project.data
-        df = pd.read_csv(source)
-        show_df = df[:10]
-        size = df.shape
-
-        #Tipo de data
-        types = []
-        for i in range(df.shape[1]):
-            column = df.columns.values[i]
-            value = df[column].dtypes
-            types.append(str(column) + ':  ' + str(value))
-
-        del(df)
-    return render(request, './ARBOLES/CLASIFICACION/AD_c.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, })
-
-def ad_c_p1(request, pk):
-    project = Project.objects.get(pk=pk)
-    source = project.data
-    df = pd.read_csv(source)
-    c=request.POST.getlist('columnas')
-    n_df = df.drop(df[c], axis=1)
-    show_df = n_df[:10]
-
-    #Creacion de un CSV
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
-
-    #Heatmap
-    corr = n_df.corr()
-    hm = px.imshow(corr, text_auto=True, aspect="auto")
-    # Colocando valores de la grafica
-    layout_hm = {
-        'title': project.name,
-        'height': 420,
-        'width': 560,
-    }
-    plot_div_hm = plot({'data': hm, 'layout': layout_hm}, output_type='div')
-    del(df)
-    return render(request, './ARBOLES/CLASIFICACION/AD_c_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
-
-def ad_c_p1_2(request, pk):
-    project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
-    df = pd.read_csv(source)
-
-    entrada =request.POST.getlist('predictoras')
-    n_df = df.drop(df[entrada], axis=1)
-    X = np.array(n_df[list(n_df.columns)])
-    df_X = pd.DataFrame(data=X, columns=n_df.columns.values)
-    show_df_x = df_X[:10]
-    
-    #Creacion de un CSV
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
-
-    salida=request.POST.getlist('salida')
-    Y = np.array(df[salida])
-    df_Y = pd.DataFrame(data=Y, columns=salida)
-    show_df_y = df_Y[:10]
-    
-    #Creacion de un CSV
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
-    del(df)
-    return render(request, './ARBOLES/CLASIFICACION/AD_c_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
-
 def ad_c_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
@@ -498,11 +439,14 @@ def ad_c_p2(request, pk):
     tam_1 = len(X_train)
     tam_2 = len(X_validation)
 
+    Y_train = round(Y_train[Y_train.columns.values[0]])
+
     #Se entrena el modelo a partir de los datos de entrada
     ClasificacionAD = DecisionTreeClassifier(random_state=0)
     entrenamiendo = ClasificacionAD.fit(X_train, Y_train)
 
     Y_ClasificacionAD = entrenamiendo.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
 
     ValoresMod = pd.DataFrame(Y_validation, Y_ClasificacionAD)
 
@@ -528,67 +472,71 @@ def ad_c_p2(request, pk):
     rep_show = []
     rep_show = reporte_arbol.split("\n")
 
-    return render(request, './ARBOLES/CLASIFICACION/AD_c_p2.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2,'score': score, 'matriz': Matriz_Clasificacion,
+    return render(request, './ARBOLES/CLASIFICACION/AD_c_p2.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'score': score, 'matriz': Matriz_Clasificacion,
     'criterio': criterio, 'importancia': importancia, 'reporte': df_cr, 'arbol': rep_show})
 
 def ad_c_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
+    if len(entradas[0]) == 0:
+        return render(request, 'temp.html')
+    else:
+        X = "api/media/data/X.csv"
+        df_X = pd.read_csv(X)
+        Y = "api/media/data/Y.csv"
+        df_Y = pd.read_csv(Y)
 
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
+        X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
+                                                                                    test_size = 0.2, 
+                                                                                    random_state = 0,
+                                                                                    shuffle = True)
+        Y_train = round(Y_train[Y_train.columns.values[0]])
 
-    #Se entrena el modelo a partir de los datos de entrada
-    ClasificacionAD = DecisionTreeClassifier(random_state=0)
-    entrenamiendo = ClasificacionAD.fit(X_train, Y_train)
+        #Se entrena el modelo a partir de los datos de entrada
+        ClasificacionAD = DecisionTreeClassifier(random_state=0)
+        entrenamiendo = ClasificacionAD.fit(X_train, Y_train)
 
-    Y_ClasificacionAD = entrenamiendo.predict(X_validation)
-    
-    col = list(df_X.columns)
-    aux = dict()
-    for i in range(df_X.shape[1]):
-        aux.update({col[i]: [float(entradas[i])]})
-    clasificacion = pd.DataFrame(aux)
-    resultado = ClasificacionAD.predict(clasificacion)
-
-    temp = df_Y[df_Y.columns.values[0]].sort_values(ascending=False)
-    salidas = temp.unique()
-
-    #Area bajo la curva
-    y_score = ClasificacionAD.predict_proba(X_validation)
-    y_test_bin = label_binarize(Y_validation, classes=salidas)
-    n_classes = y_test_bin.shape[1]
-
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    AUC_list = []
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_score[:, i])
-        if i == 0 :
-            figAUC = px.line(x=fpr[i], y=tpr[i])
-        else:
-            figAUC.add_scatter(x=fpr[i], y=tpr[i])
-
-        print(auc(fpr[0], tpr[0]))
-        AUC_list.append('AUC para la clase {}: {}'.format(i+1, auc(fpr[i], tpr[i])))
-
-    figAUC.update_layout(
-        xaxis_title='False Positive Rate',
-        yaxis_title='True Positive Rate',
-        yaxis=dict(scaleanchor="x", scaleratio=1),
-        xaxis=dict(constrain='domain'),
-        width=700, height=500
-    )
-    plot_auc = plot({'data': figAUC}, output_type='div')
+        Y_ClasificacionAD = entrenamiendo.predict(X_validation)
+        Y_validation = round(Y_validation[Y_validation.columns.values[0]])
         
-    return render(request, './ARBOLES/CLASIFICACION/Prueba.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,
+        col = list(df_X.columns)
+        aux = dict()
+        for i in range(df_X.shape[1]):
+            aux.update({col[i]: [float(entradas[i])]})
+        clasificacion = pd.DataFrame(aux)
+        resultado = ClasificacionAD.predict(clasificacion)
+
+        temp = df_Y[df_Y.columns.values[0]].sort_values()
+        salidas = temp.unique()
+
+        #Area bajo la curva
+        y_score = ClasificacionAD.predict_proba(X_validation)
+        y_test_bin = label_binarize(Y_validation, classes=salidas)
+        n_classes = y_test_bin.shape[1]
+
+        fpr = dict()
+        tpr = dict()
+        roc_auc = dict()
+        AUC_list = []
+        for i in range(n_classes):
+            fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_score[:, i])
+            if i == 0 :
+                figAUC = px.line(x=fpr[i], y=tpr[i])
+            else:
+                figAUC.add_scatter(x=fpr[i], y=tpr[i])
+
+            AUC_list.append('AUC para la clase {}: {}'.format(i+1, auc(fpr[i], tpr[i])))
+
+        figAUC.update_layout(
+            xaxis_title='False Positive Rate',
+            yaxis_title='True Positive Rate',
+            yaxis=dict(scaleanchor="x", scaleratio=1),
+            xaxis=dict(constrain='domain'),
+            width=700, height=500
+        )
+        plot_auc = plot({'data': figAUC}, output_type='div')
+            
+        return render(request, './ARBOLES/CLASIFICACION/Prueba.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,
     'auc': plot_auc, 'auc_score':AUC_list})
 
 #Metodo Bosque aleatorio
@@ -598,8 +546,7 @@ def ba(request):
         'projects': projects
     })
 
-#Pronostico
-def ba_pronostico(request, pk):
+def ba_p0(request, pk):
     if request.method == 'POST':
         project = Project.objects.get(pk=pk)
         source = project.data
@@ -616,19 +563,19 @@ def ba_pronostico(request, pk):
             value = df[column].dtypes
             types.append(str(column) + ':  ' + str(value))
 
-        #Datos faltantes
-        null = []
-        for i in range(df.shape[1]):
-            column = df.columns.values[i]
-            value = df[column].isnull().sum()
-            null.append(str(column) + ':  ' + str(value))
+        numericos = df.select_dtypes(include = ["int16", "int32", "int64", "float16", "float32", "float64"])
+        
+        n_df = numericos.dropna()
+
+        #Creacion de un archivo CSV
+        n_df.to_csv("api/media/data/newData.csv", index=False)
 
         del(df)
-    return render(request, './BOSQUES/PRONOSTICO/BA_p.html', context={'project': project, 'df': show_df, 'size' : size, })
+    return render(request, './BOSQUES/BA_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'num': n_df})
 
-def ba_p_p1(request, pk):
+def ba_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = project.data
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
         df.columns.values[i] = df.columns.values[i].replace(" ", "_")    
@@ -637,7 +584,7 @@ def ba_p_p1(request, pk):
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/newData.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -650,11 +597,11 @@ def ba_p_p1(request, pk):
     }
     plot_div_hm = plot({'data': hm, 'layout': layout_hm}, output_type='div')
     del(df)
-    return render(request, './BOSQUES/PRONOSTICO/BA_p_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
+    return render(request, './BOSQUES/BA_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
 
-def ba_p_p1_2(request, pk):
+def ba_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
 
     entrada =request.POST.getlist('predictoras')
@@ -663,22 +610,23 @@ def ba_p_p1_2(request, pk):
     df_X = pd.DataFrame(data=X, columns=n_df.columns.values)
     show_df_x = df_X[:10]
     
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
+    df_X.to_csv("api/media/data/X.csv", index=False)
 
     salida=request.POST.getlist('salida')
     Y = np.array(df[salida])
     df_Y = pd.DataFrame(data=Y, columns=salida)
     show_df_y = df_Y[:10]
     
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
+    df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
-    return render(request, './BOSQUES/PRONOSTICO/BA_p_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    return render(request, './BOSQUES/BA_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
 
+#Pronostico
 def ba_p_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(df_X, df_Y, 
@@ -719,9 +667,9 @@ def ba_p_p2(request, pk):
 def ba_p_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(df_X, df_Y, 
@@ -750,74 +698,11 @@ def ba_p_final(request, pk):
     return render(request, './BOSQUES/PRONOSTICO/Prueba.html', context={'project': project, 'df': df_X, 'prueba': pronostico, 'resultado': resultado})
 
 #Clasificacion
-def ba_clasificacion(request, pk):
-    if request.method == 'POST':
-        project = Project.objects.get(pk=pk)
-        source = project.data
-        df = pd.read_csv(source)
-        show_df = df[:10]
-        size = df.shape
-
-        #Tipo de data
-        types = []
-        for i in range(df.shape[1]):
-            column = df.columns.values[i]
-            value = df[column].dtypes
-            types.append(str(column) + ':  ' + str(value))
-
-        del(df)
-    return render(request, './BOSQUES/CLASIFICACION/BA_c.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, })
-
-def ba_c_p1(request, pk):
-    project = Project.objects.get(pk=pk)
-    source = project.data
-    df = pd.read_csv(source)
-    c=request.POST.getlist('columnas')
-    n_df = df.drop(df[c], axis=1)
-    show_df = n_df[:10]
-
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
-
-    #Heatmap
-    corr = n_df.corr()
-    hm = px.imshow(corr, text_auto=True, aspect="auto")
-    # Colocando valores de la grafica
-    layout_hm = {
-        'title': project.name,
-        'height': 420,
-        'width': 560,
-    }
-    plot_div_hm = plot({'data': hm, 'layout': layout_hm}, output_type='div')
-    del(df)
-    return render(request, './BOSQUES/CLASIFICACION/BA_c_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm})
-
-def ba_c_p1_2(request, pk):
-    project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
-    df = pd.read_csv(source)
-
-    entrada =request.POST.getlist('predictoras')
-    n_df = df.drop(df[entrada], axis=1)
-    X = np.array(n_df[list(n_df.columns)])
-    df_X = pd.DataFrame(data=X, columns=n_df.columns.values)
-    show_df_x = df_X[:10]
-    
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
-
-    salida=request.POST.getlist('salida')
-    Y = np.array(df[salida])
-    df_Y = pd.DataFrame(data=Y, columns=salida)
-    show_df_y = df_Y[:10]
-    
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
-    del(df)
-    return render(request, './BOSQUES/CLASIFICACION/BA_c_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
-
 def ba_c_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
@@ -827,11 +712,14 @@ def ba_c_p2(request, pk):
     tam_1 = len(X_train)
     tam_2 = len(X_validation)
 
+    Y_train = round(Y_train[Y_train.columns.values[0]])
+
     #Se entrena el modelo a partir de los datos de entrada
     ClasificacionBA = RandomForestClassifier(random_state=0)
     entrenamiendo = ClasificacionBA.fit(X_train, Y_train)
 
     Y_ClasificacionBA = entrenamiendo.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
 
     ValoresMod = pd.DataFrame(Y_validation, Y_ClasificacionBA)
 
@@ -863,9 +751,9 @@ def ba_c_p2(request, pk):
 def ba_c_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
@@ -873,11 +761,14 @@ def ba_c_final(request, pk):
                                                                                 random_state = 0,
                                                                                 shuffle = True)
 
+    Y_train = round(Y_train[Y_train.columns.values[0]])
+
     #Se entrena el modelo a partir de los datos de entrada
     ClasificacionBA = RandomForestClassifier(random_state=0)
     entrenamiendo = ClasificacionBA.fit(X_train, Y_train)
 
     Y_ClasificacionBA = entrenamiendo.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
     
     col = list(df_X.columns)
     aux = dict()
@@ -931,6 +822,8 @@ def sc_p0(request, pk):
         project = Project.objects.get(pk=pk)
         source = project.data
         df = pd.read_csv(source)
+        for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
         show_df = df[:10]
         size = df.shape
 
@@ -941,18 +834,27 @@ def sc_p0(request, pk):
             value = df[column].dtypes
             types.append(str(column) + ':  ' + str(value))
 
+        numericos = df.select_dtypes(include = ["int16", "int32", "int64", "float16", "float32", "float64"])
+        
+        n_df = numericos.dropna()
+
+        #Creacion de un archivo CSV
+        n_df.to_csv("api/media/data/newData.csv", index=False)
+
         del(df)
-    return render(request, './SC/SC_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, })
+    return render(request, './SC/SC_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': n_df})
 
 def sc_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = project.data
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
     c=request.POST.getlist('columnas')
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/newData.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -981,8 +883,8 @@ def sc_p1(request, pk):
         km.fit(MEstandarizada)
         SSE.append(km.inertia_)
 
-    #Grafica de varianza
-    graph_var = px.line(x=range(2, 10), y=SSE)
+    #Grafica del metodo del codo
+    graph_var = px.line(SSE, markers=True)
     graph_var.update_xaxes(title_text='Cantidad de clusters *k*')
     graph_var.update_yaxes(title_text='SSE')
     
@@ -994,12 +896,14 @@ def sc_p1(request, pk):
     }
     plot_elbow = plot({'data': graph_var, 'layout': layout_e}, output_type='div')
 
+    kl = KneeLocator(range(2, 10), SSE, curve="convex", direction="decreasing")
+
     del(df)
-    return render(request, './SC/SC_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm,'std': show_std, 'elbow': plot_elbow})
+    return render(request, './SC/SC_p1.html', context={'project': project, 'df': show_df, 'hm': plot_div_hm,'std': show_std, 'elbow': plot_elbow, 'clusters': kl.elbow})
 
 def sc_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
     clusters=request.POST.getlist('clusters')
     show_df = df[:10]
@@ -1016,7 +920,7 @@ def sc_p2(request, pk):
     valores = MParticional.labels_
     
     df['clusterP'] = valores
-    df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/clasificacion.csv", index=False)
+    df.to_csv("api/media/data/clasificacion.csv", index=False)
     show_ndf = df[:10]
 
     #Cantidad de elementos en los clusters
@@ -1027,15 +931,25 @@ def sc_p2(request, pk):
 
     CentroidesP = df.groupby('clusterP').mean()
 
-    #Falta gráfica
+    # Gráfica de los elementos y los centros de los clusters
+    figScatter = px.scatter_3d(data_frame = df, x = MEstandarizada[:,0], y = MEstandarizada[:,1], z = MEstandarizada[:,2], 
+    color = df['clusterP'], hover_name = df['clusterP'], symbol = 'clusterP')
+    figScatter.add_scatter3d(x = MParticional.cluster_centers_[:,0], y = MParticional.cluster_centers_[:,1], 
+    z = MParticional.cluster_centers_[:,2], mode = 'markers')
+    figScatter.update_layout(
+        title = 'Gráfica de los elementos y los centros de los clusters'
+    )
+    plot_scatter = plot({'data': figScatter}, output_type = 'div')
 
     del(df)
-    return render(request, './SC/SC_p2.html', context={'project': project, 'df': show_df, 'etiqueta': show_ndf, 'grupos': show_grupos, 'centroides': CentroidesP})
+    return render(request, './SC/SC_p2.html', context={'project': project, 'df': show_df, 'etiqueta': show_ndf, 'grupos': show_grupos, 'centroides': CentroidesP, 'plot': plot_scatter})
 
 def sc_p2_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/clasificacion.csv"
+    source = "api/media/data/clasificacion.csv"
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
 
     entrada =request.POST.getlist('predictoras')
     n_df = df.drop(df[entrada], axis=1)
@@ -1043,22 +957,22 @@ def sc_p2_2(request, pk):
     df_X = pd.DataFrame(data=X, columns=n_df.columns.values)
     show_df_x = df_X[:10]
     
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
+    df_X.to_csv("api/media/data/X.csv", index=False)
 
     salida=request.POST.getlist('salida')
     Y = np.array(df[salida])
     df_Y = pd.DataFrame(data=Y, columns=salida)
     show_df_y = df_Y[:10]
     
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
+    df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
     return render(request, './SC/SC_p2_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
 
 def sc_p3(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
@@ -1068,11 +982,14 @@ def sc_p3(request, pk):
     tam_1 = len(X_train)
     tam_2 = len(X_validation)
 
+    Y_train = round(Y_train[Y_train.columns.values[0]])
+
     #Se entrena el modelo a partir de los datos de entrada
     ClasificacionBA = RandomForestClassifier(random_state=0)
     entrenamiendo = ClasificacionBA.fit(X_train, Y_train)
 
     Y_ClasificacionBA = entrenamiendo.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
 
     ValoresMod = pd.DataFrame(Y_validation, Y_ClasificacionBA)
 
@@ -1104,9 +1021,9 @@ def sc_p3(request, pk):
 def sc_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
 
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
@@ -1114,11 +1031,14 @@ def sc_final(request, pk):
                                                                                 random_state = 0,
                                                                                 shuffle = True)
 
+    Y_train = round(Y_train[Y_train.columns.values[0]])
+
     #Se entrena el modelo a partir de los datos de entrada
     ClasificacionBA = RandomForestClassifier(random_state=0)
     entrenamiendo = ClasificacionBA.fit(X_train, Y_train)
 
     Y_ClasificacionBA = entrenamiendo.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
     
     col = list(df_X.columns)
     aux = dict()
@@ -1160,6 +1080,7 @@ def sc_final(request, pk):
 
     return render(request, './SC/Prueba.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado, 'auc': plot_auc, 'auc_score': AUC_list})
 
+#Maquinas de vectores de soporte
 def svm(request):
     projects = Project.objects.all()
     return render(request, './SVM/SVM.html', {
@@ -1171,6 +1092,8 @@ def svm_p0(request, pk):
         project = Project.objects.get(pk=pk)
         source = project.data
         df = pd.read_csv(source)
+        for i in range(df.shape[1]):
+            df.columns.values[i] = df.columns.values[i].replace(" ", "_")
         show_df = df[:10]
         size = df.shape
 
@@ -1181,18 +1104,27 @@ def svm_p0(request, pk):
             value = df[column].dtypes
             types.append(str(column) + ':  ' + str(value))
 
+        numericos = df.select_dtypes(include = ["int16", "int32", "int64", "float16", "float32", "float64"])
+        
+        n_df = numericos.dropna()
+
+        #Creacion de un archivo CSV
+        n_df.to_csv("api/media/data/newData.csv", index=False)
+
         del(df)
-    return render(request, './SVM/SVM_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, })
+    return render(request, './SVM/SVM_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': n_df})
 
 def svm_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = project.data
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ", "_")
     c=request.POST.getlist('columnas')
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/newData.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -1209,7 +1141,7 @@ def svm_p1(request, pk):
 
 def svm_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "C:/Users/USER/Desktop/Proyecto/api/media/data/newData.csv"
+    source = "api/media/data/newData.csv"
     df = pd.read_csv(source)
 
     entrada =request.POST.getlist('predictoras')
@@ -1218,37 +1150,40 @@ def svm_p1_2(request, pk):
     df_X = pd.DataFrame(data=X, columns=n_df.columns.values)
     show_df_x = df_X[:10]
     
-    df_X.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv", index=False)
+    df_X.to_csv("api/media/data/X.csv", index=False)
 
     salida=request.POST.getlist('salida')
     Y = np.array(df[salida])
     df_Y = pd.DataFrame(data=Y, columns=salida)
     show_df_y = df_Y[:10]
     
-    df_Y.to_csv("C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv", index=False)
+    df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
     return render(request, './SVM/SVM_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
 
-def svm_p2_lineal(request, pk):
+def svm_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
-
+    temp = request.POST.getlist('metodo')
+    metodo = temp[0]
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
                                                                                 test_size = 0.2, 
                                                                                 random_state = 0,
                                                                                 shuffle = True)
     tam_1 = len(X_train)
     tam_2 = len(X_validation)
+    
+    Y_train = round(Y_train[Y_train.columns.values[0]])
 
-    #Modelo: SVM Lineal
     #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='linear')
+    ModeloSVM = SVC(kernel=metodo)
     entrenamiento = ModeloSVM.fit(X_train, Y_train)
 
     Clasificaciones = entrenamiento.predict(X_validation)
+    Y_validation = round(Y_validation[Y_validation.columns.values[0]])
     Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
 
     #Se calcula la exactitud promedio de la validación
@@ -1275,25 +1210,25 @@ def svm_p2_lineal(request, pk):
     n_vs = ModeloSVM.n_support_
     vs = ModeloSVM.support_
 
-    return render(request, './SVM/SVM_p2_lineal.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'matriz': Matriz_Clasificacion,
+    return render(request, './SVM/SVM_p2.html', context={'project': project, 'metodo': metodo, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'matriz': Matriz_Clasificacion,
     'score': exactitud, 'reporte': df_cr, 'df_vs': show_df_vs, 'n_vs': n_vs, 'vs': vs, })
 
-def svm_final_lineal(request, pk):
+def svm_final(request, pk):
     project = Project.objects.get(pk=pk)
     entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
+    X = "api/media/data/X.csv"
     df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
+    Y = "api/media/data/Y.csv"
     df_Y = pd.read_csv(Y)
-
+    temp = request.POST.getlist('metodo')
+    metodo = temp[0]
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
                                                                                 test_size = 0.2, 
                                                                                 random_state = 0,
                                                                                 shuffle = True)
 
-    #Modelo: SVM Lineal
     #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='linear')
+    ModeloSVM = SVC(kernel=metodo)
     entrenamiento = ModeloSVM.fit(X_train, Y_train)
 
     Clasificaciones = entrenamiento.predict(X_validation)
@@ -1306,254 +1241,15 @@ def svm_final_lineal(request, pk):
     clasificacion = pd.DataFrame(aux)
     resultado = ModeloSVM.predict(clasificacion)
 
-    #Falta AUC
-
-    return render(request, './SVM/Prueba_lineal.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,})
-
-def svm_p2_polinomial(request, pk):
-    project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-    tam_1 = len(X_train)
-    tam_2 = len(X_validation)
-
-    #Modelo: SVM Polinomial
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='poly', degree=3)
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    #Se calcula la exactitud promedio de la validación
-    exactitud = ModeloSVM.score(X_validation, Y_validation)
-
-    #Validacion del modelo
-    #Matriz de clasificación
-    Clasificaciones = ModeloSVM.predict(X_validation)
-    Matriz_Clasificacion = pd.crosstab(Y_validation.values.ravel(), 
-                                    Clasificaciones, 
-                                    rownames=['Real'], 
-                                    colnames=['Clasificación'])  
-    
-    #Reporte de la clasificación
-    reporte = classification_report(Y_validation, Clasificaciones, output_dict=True)
-    df_cr = pd.DataFrame(reporte).transpose()
-    df_cr = df_cr.sort_values(by=['f1-score'], ascending=False)
-    
-    VectoresSoporte = ModeloSVM.support_vectors_
-    df_vs = pd.DataFrame(VectoresSoporte)
-    show_df_vs = df_vs[:10]
-
-    #Vectores de soporte
-    n_vs = ModeloSVM.n_support_
-    vs = ModeloSVM.support_
-
-    return render(request, './SVM/SVM_p2_polinomial.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'matriz': Matriz_Clasificacion,
-    'score': exactitud, 'reporte': df_cr, 'df_vs': show_df_vs, 'n_vs': n_vs, 'vs': vs, })
-
-def svm_final_polinomial(request, pk):
-    project = Project.objects.get(pk=pk)
-    entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-
-    #Modelo: SVM Polinomial
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='poly', degree=3)
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    col = list(df_X.columns)
-    aux = dict()
-    for i in range(df_X.shape[1]):
-        aux.update({col[i]: [float(entradas[i])]})
-    clasificacion = pd.DataFrame(aux)
-    resultado = ModeloSVM.predict(clasificacion)
-
-    #Falta AUC
-
-    return render(request, './SVM/Prueba_polinomial.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,})
-
-def svm_p2_rbf(request, pk):
-    project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-    tam_1 = len(X_train)
-    tam_2 = len(X_validation)
-
-    #Modelo: SVM RBF
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='rbf')
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    #Se calcula la exactitud promedio de la validación
-    exactitud = ModeloSVM.score(X_validation, Y_validation)
-
-    #Validacion del modelo
-    #Matriz de clasificación
-    Clasificaciones = ModeloSVM.predict(X_validation)
-    Matriz_Clasificacion = pd.crosstab(Y_validation.values.ravel(), 
-                                    Clasificaciones, 
-                                    rownames=['Real'], 
-                                    colnames=['Clasificación'])  
-    
-    #Reporte de la clasificación
-    reporte = classification_report(Y_validation, Clasificaciones, output_dict=True)
-    df_cr = pd.DataFrame(reporte).transpose()
-    df_cr = df_cr.sort_values(by=['f1-score'], ascending=False)
-    
-    VectoresSoporte = ModeloSVM.support_vectors_
-    df_vs = pd.DataFrame(VectoresSoporte)
-    show_df_vs = df_vs[:10]
-
-    #Vectores de soporte
-    n_vs = ModeloSVM.n_support_
-    vs = ModeloSVM.support_
-
-    return render(request, './SVM/SVM_p2_rbf.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'matriz': Matriz_Clasificacion,
-    'score': exactitud, 'reporte': df_cr, 'df_vs': show_df_vs, 'n_vs': n_vs, 'vs': vs, })
-
-def svm_final_rbf(request, pk):
-    project = Project.objects.get(pk=pk)
-    entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-
-    #Modelo: SVM RBF
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='rbf')
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    col = list(df_X.columns)
-    aux = dict()
-    for i in range(df_X.shape[1]):
-        aux.update({col[i]: [float(entradas[i])]})
-    clasificacion = pd.DataFrame(aux)
-    resultado = ModeloSVM.predict(clasificacion)
-
-    #Falta AUC
-
-    return render(request, './SVM/Prueba_rbf.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,})
-
-def svm_p2_sigmoide(request, pk):
-    project = Project.objects.get(pk=pk)
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-    tam_1 = len(X_train)
-    tam_2 = len(X_validation)
-
-    #Modelo: SVM Sigmoide
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='sigmoid')
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    #Se calcula la exactitud promedio de la validación
-    exactitud = ModeloSVM.score(X_validation, Y_validation)
-
-    #Validacion del modelo
-    #Matriz de clasificación
-    Clasificaciones = ModeloSVM.predict(X_validation)
-    Matriz_Clasificacion = pd.crosstab(Y_validation.values.ravel(), 
-                                    Clasificaciones, 
-                                    rownames=['Real'], 
-                                    colnames=['Clasificación'])  
-    
-    #Reporte de la clasificación
-    reporte = classification_report(Y_validation, Clasificaciones, output_dict=True)
-    df_cr = pd.DataFrame(reporte).transpose()
-    df_cr = df_cr.sort_values(by=['f1-score'], ascending=False)
-    
-    VectoresSoporte = ModeloSVM.support_vectors_
-    df_vs = pd.DataFrame(VectoresSoporte)
-    show_df_vs = df_vs[:10]
-
-    #Vectores de soporte
-    n_vs = ModeloSVM.n_support_
-    vs = ModeloSVM.support_
-
-    return render(request, './SVM/SVM_p2_sigmoide.html', context={'project': project, 'df': df_X, 'X_train': tam_1, 'X_validation': tam_2, 'matriz': Matriz_Clasificacion,
-    'score': exactitud, 'reporte': df_cr, 'df_vs': show_df_vs, 'n_vs': n_vs, 'vs': vs, })
-
-def svm_final_sigmoide(request, pk):
-    project = Project.objects.get(pk=pk)
-    entradas =request.POST.getlist('entradas')
-    X = "C:/Users/USER/Desktop/Proyecto/api/media/data/X.csv"
-    df_X = pd.read_csv(X)
-    Y = "C:/Users/USER/Desktop/Proyecto/api/media/data/Y.csv"
-    df_Y = pd.read_csv(Y)
-
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(df_X, df_Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-
-    #Modelo: SVM Sigmoide
-    #Se declara el tipo de kernel y se entrena el modelo
-    ModeloSVM = SVC(kernel='sigmoid')
-    entrenamiento = ModeloSVM.fit(X_train, Y_train)
-
-    Clasificaciones = entrenamiento.predict(X_validation)
-    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones)
-
-    col = list(df_X.columns)
-    aux = dict()
-    for i in range(df_X.shape[1]):
-        aux.update({col[i]: [float(entradas[i])]})
-    clasificacion = pd.DataFrame(aux)
-    resultado = ModeloSVM.predict(clasificacion)
-
-    #Falta AUC
-
-    return render(request, './SVM/Prueba_sigmoide.html', context={'project': project, 'df': df_X, 'prueba': clasificacion, 'resultado': resultado,})
+    return render(request, './SVM/Prueba.html', context={'project': project, 'df': df_X, 'metodo': metodo, 'prueba': clasificacion, 'resultado': resultado,})
 
 #Pagina "acerca de" de la aplicacion
 def about(request):
-    projects = Project.objects.all()
     return render(request, 'about.html')
+
+def temp(request):
+    projects = Project.objects.all()
+    print(request)
+    return render(request, 'temp.html', {
+        'projects': projects
+    })
