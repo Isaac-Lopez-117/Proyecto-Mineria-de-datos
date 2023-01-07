@@ -19,7 +19,10 @@
       <td>{{ project.desc }}</td>
       <td>{{ project.data }}</td>
       <td>
-        <a href="/proyectos/{{project.pk}}" class="btn btn-danger btn-sm Eliminar"> <i class="bi bi-trash-fill"></i> Eliminar </a>
+        <form method="post" action="{% url 'delete_project' project.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm Eliminar">Eliminar</button>
+        </form>
       </td>
     </tr>
     {% endfor %}

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
-    <h2>Arbol de decisión (pronóstico): {{ project.title }}</h2>
+    <h2>Bosque aleatorio: {{ project.title }}</h2>
   </div>
 </div>
 
@@ -34,9 +34,9 @@
   {% endfor %}
   
   <p>2) Selección de características</p>
-  <p>Selecciona la variable que deseas eliminar para el analisis de correlaciones:</p>
+  <p>Selecciona la variable que deseas eliminar para el analisis de correlaciones</p>
   <p>Solo se pueden usar variables numéricas.</p>
-  <form class="needs-validation" novalidate action="{% url 'ad_p_p1' project.pk %}" method="POST">{% csrf_token %}
+  <form class="needs-validation" novalidate action="{% url 'ba_p1' project.pk %}" method="POST">{% csrf_token %}
     
     {% for col in num.columns %}
     <div class="form-check">

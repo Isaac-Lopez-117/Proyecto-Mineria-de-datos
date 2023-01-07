@@ -15,13 +15,9 @@
       <td>{{ project.title }}</td>
       <td>{{ project.name }}</td>
       <td>
-        <form method="post" action="{% url 'ad_p' project.pk %}">
+        <form method="post" action="{% url 'ad_p0' project.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-primary btn-sm">Pronóstico</button>
-        </form>
-        <form method="post" action="{% url 'ad_c' project.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-secondary btn-sm">Clasificación</button>
+          <button type="submit" class="btn btn-primary btn-sm">Escoger</button>
         </form>
       </td>
     </tr>

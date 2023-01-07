@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
-    <h2>Máquinas de soporte vectorial: {{ project.title }}</h2>
+    <h2>Arbol de decisión: {{ project.title }}</h2>
   </div>
 </div>
 
@@ -50,20 +50,12 @@
         {% endfor %}
     </table>
   </div>
-  
-  <div class="form-group" >
-    <form class="needs-validation" novalidate action="{% url 'svm_p2' project.pk %}" method="POST">{% csrf_token %}
-      <label for="metodo" class="form-label mt-4">Método a utilizar: </label>
-      <select class="form-select" name="metodo" id="metodo">
-        <option value="linear">Lineal</option>
-        <option value="poly">Polinomial</option>
-        <option value="rbf">RBF</option>
-        <option value="sigmoid">Sigmoide</option>
-      </select>
-      <br/>
-      <input type="submit" value="Escoger" />
-    </form>
-  </div>
+  <form class="needs-validation" novalidate action="{% url 'ad_p_p2' project.pk %}" method="POST">{% csrf_token %}
+    <button type="submit" class="btn btn-primary">Pronóstico</button>
+  </form>
+  <form class="needs-validation" novalidate action="{% url 'ad_c_p2' project.pk %}" method="POST">{% csrf_token %}
+    <button type="submit" class="btn btn-primary">Clasificación</button>
+  </form>
 </div>
 
 

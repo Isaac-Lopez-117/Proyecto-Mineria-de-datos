@@ -68,9 +68,10 @@
   
   <form class="needs-validation" novalidate action="{% url 'sc_p2' project.pk %}" method="POST">{% csrf_token %}
     <p>¿Cuantos clusters se van a usar?</p>
+    <p>Se recomienda usar {{clusters}} número de clusters.</p>
     <div class="form-check">
       <label for="option:clusters">Clusters:</label>
-      <input type="number" min="0" oninput="validity.valid||(value='');" name="clusters" id="option:clusters"/>
+      <input type="number" min="0" oninput="validity.valid||(value='');" name="clusters" id="option:clusters" required="required"/>
     </div>
     <button type="submit" class="btn btn-primary">Continuar</button>
     
@@ -79,4 +80,27 @@
 </div>
 
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Example starter JavaScript for disabling form submissions if there are invalid fields
+  (function() {
+  'use strict';
+  window.addEventListener('load', function() {
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.getElementsByClassName('needs-validation');
+      // Loop over them and prevent submission
+      var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+      }, false);
+      });
+  }, false);
+  })();
+</script>
 {% endblock %}

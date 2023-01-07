@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
-    <h2>Máquinas de soporte vectorial: {{ project.title }}</h2>
+    <h2>Arbol de decisión: {{ project.title }}</h2>
   </div>
 </div>
 <p>2) Selección de características</p>
@@ -36,7 +36,7 @@
 
   <p>3) Definición de las variables predictoras y variable clase</p>
   <p>Selecciona las variables que deseas quitar para las variables predictoras</p>
-  <form class="needs-validation" novalidate action="{% url 'svm_p1_2' project.pk %}" method="POST">{% csrf_token %}
+  <form class="needs-validation" novalidate action="{% url 'ad_p1_2' project.pk %}" method="POST">{% csrf_token %}
     
     {% for col in df.columns %}
     <div class="form-check">
