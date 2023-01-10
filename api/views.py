@@ -290,14 +290,14 @@ def ad_p0(request, pk):
         n_df = numericos.dropna()
 
         #Creacion de un archivo CSV
-        n_df.to_csv("api/media/data/newData.csv", index=False)
+        n_df.to_csv("api/media/data/paso_0.csv", index=False)
 
         del(df)
     return render(request, './ARBOLES/AD_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': numericos})
 
 def ad_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_0.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
         df.columns.values[i] = df.columns.values[i].replace(" ", "_")    
@@ -305,7 +305,7 @@ def ad_p1(request, pk):
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
     #Creacion de un archivo CSV
-    n_df.to_csv(source, index=False)
+    n_df.to_csv("api/media/data/paso_1.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -322,7 +322,7 @@ def ad_p1(request, pk):
 
 def ad_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_1.csv"
     df = pd.read_csv(source)
     
     entrada =request.POST.getlist('predictoras') #Obtencion de las variables predictoras
@@ -342,7 +342,12 @@ def ad_p1_2(request, pk):
     #Creacion de un archivo CSV
     df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
-    return render(request, './ARBOLES/AD_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+
+    if str(salida[0]) in entrada:
+        return render(request, './ARBOLES/AD_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    else:
+        return render(request, 'ERROR.html') 
+    
 
 #Pronostico
 def ad_p_p2(request, pk):
@@ -568,14 +573,14 @@ def ba_p0(request, pk):
         n_df = numericos.dropna()
 
         #Creacion de un archivo CSV
-        n_df.to_csv("api/media/data/newData.csv", index=False)
+        n_df.to_csv("api/media/data/paso_0.csv", index=False)
 
         del(df)
-    return render(request, './BOSQUES/BA_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'num': n_df})
+    return render(request, './BOSQUES/BA_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types,'num': numericos})
 
 def ba_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_0.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
         df.columns.values[i] = df.columns.values[i].replace(" ", "_")    
@@ -584,7 +589,7 @@ def ba_p1(request, pk):
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/paso_1.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -601,7 +606,7 @@ def ba_p1(request, pk):
 
 def ba_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_1.csv"
     df = pd.read_csv(source)
 
     entrada =request.POST.getlist('predictoras')
@@ -618,8 +623,13 @@ def ba_p1_2(request, pk):
     show_df_y = df_Y[:10]
     
     df_Y.to_csv("api/media/data/Y.csv", index=False)
+
     del(df)
-    return render(request, './BOSQUES/BA_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+
+    if str(salida[0]) in entrada:
+        return render(request, './BOSQUES/BA_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    else:
+        return render(request, 'ERROR.html') 
 
 #Pronostico
 def ba_p_p2(request, pk):
@@ -839,14 +849,14 @@ def sc_p0(request, pk):
         n_df = numericos.dropna()
 
         #Creacion de un archivo CSV
-        n_df.to_csv("api/media/data/newData.csv", index=False)
+        n_df.to_csv("api/media/data/paso_0.csv", index=False)
 
         del(df)
     return render(request, './SC/SC_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': n_df})
 
 def sc_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_0.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
             df.columns.values[i] = df.columns.values[i].replace(" ", "_") 
@@ -854,7 +864,7 @@ def sc_p1(request, pk):
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/paso_1.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -903,7 +913,7 @@ def sc_p1(request, pk):
 
 def sc_p2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_1.csv"
     df = pd.read_csv(source)
     clusters=request.POST.getlist('clusters')
     show_df = df[:10]
@@ -966,7 +976,11 @@ def sc_p2_2(request, pk):
     
     df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
-    return render(request, './SC/SC_p2_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+
+    if str(salida[0]) in entrada:
+        return render(request, './SC/SC_p2_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    else:
+        return render(request, 'ERROR.html')
 
 def sc_p3(request, pk):
     project = Project.objects.get(pk=pk)
@@ -1109,14 +1123,14 @@ def svm_p0(request, pk):
         n_df = numericos.dropna()
 
         #Creacion de un archivo CSV
-        n_df.to_csv("api/media/data/newData.csv", index=False)
+        n_df.to_csv("api/media/data/paso_0.csv", index=False)
 
         del(df)
     return render(request, './SVM/SVM_p0.html', context={'project': project, 'df': show_df, 'size' : size, 'types': types, 'num': n_df})
 
 def svm_p1(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_0.csv"
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
         df.columns.values[i] = df.columns.values[i].replace(" ", "_")
@@ -1124,7 +1138,7 @@ def svm_p1(request, pk):
     n_df = df.drop(df[c], axis=1)
     show_df = n_df[:10]
 
-    n_df.to_csv("api/media/data/newData.csv", index=False)
+    n_df.to_csv("api/media/data/paso_1.csv", index=False)
 
     #Heatmap
     corr = n_df.corr()
@@ -1141,7 +1155,7 @@ def svm_p1(request, pk):
 
 def svm_p1_2(request, pk):
     project = Project.objects.get(pk=pk)
-    source = "api/media/data/newData.csv"
+    source = "api/media/data/paso_1.csv"
     df = pd.read_csv(source)
 
     entrada =request.POST.getlist('predictoras')
@@ -1159,7 +1173,11 @@ def svm_p1_2(request, pk):
     
     df_Y.to_csv("api/media/data/Y.csv", index=False)
     del(df)
-    return render(request, './SVM/SVM_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+
+    if str(salida[0]) in entrada:
+        return render(request, './SVM/SVM_p1_2.html', context={'project': project, 'X': show_df_x, 'Y': show_df_y,})
+    else:
+        return render(request, 'ERROR.html')
 
 def svm_p2(request, pk):
     project = Project.objects.get(pk=pk)
@@ -1246,10 +1264,3 @@ def svm_final(request, pk):
 #Pagina "acerca de" de la aplicacion
 def about(request):
     return render(request, 'about.html')
-
-def temp(request):
-    projects = Project.objects.all()
-    print(request)
-    return render(request, 'temp.html', {
-        'projects': projects
-    })
