@@ -29,14 +29,6 @@
     </table>
   </div>
     <p>Resultado de la clasificacion: {{resultado}}</p>
-    <p>Validación del modelo</p>
-    {% autoescape off %}
-    {{ auc }}
-    {% endautoescape %}
-
-    {% for i in auc_score %}
-    {{i}}<br/>
-    {% endfor %}
 </div>
 
 {% endblock %}

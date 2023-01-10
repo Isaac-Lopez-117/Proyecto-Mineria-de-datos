@@ -32,7 +32,7 @@
 <h3>Paso 2: Se hace una estandarización de los datos.</h3>
 
 <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
-  <tr>
+  <tr class="table-dark">
     {% for col in std.columns %}
       <th>
         {{col}}
@@ -63,7 +63,7 @@
 {% endautoescape %}
 <h3>Paso 6: Se examina la proporción de relevancias –cargas–</h3>
 <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
-  <tr>
+  <tr class="table-dark">
     {% for col in cc.columns %}
       <th>
         {{col}}

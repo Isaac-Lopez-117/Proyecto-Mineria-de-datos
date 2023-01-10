@@ -68,8 +68,6 @@ urlpatterns = [
     path('svm/2/<int:pk>/', views.svm_p2, name='svm_p2'),
     path('svm/final/<int:pk>/', views.svm_final, name='svm_final'),
 
-
-    path('temp/', views.temp, name='temp'),
     path('about/', views.about, name='about'),
     path('admin/', admin.site.urls),
 ]

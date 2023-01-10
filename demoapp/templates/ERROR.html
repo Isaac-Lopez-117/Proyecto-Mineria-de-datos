@@ -1,0 +1,13 @@
+{% extends 'base.html' %} 
+{% load static %} {% block content %}
+<div class="card text-white bg-danger" style="max-width: 20rem;">
+  <div class="card-header">ERROR</div>
+  <div class="card-body">
+    <h4 class="card-title">¡Error de datos!</h4>
+    <p class="card-text">
+      Será mejor que verifiques los datos seleccionados
+      <input type="button" onclick="history.back()" name="volver atrás" value="volver atrás" class="btn btn-warning">
+    </p>
+  </div>
+</div>
+{% endblock %}
